@@ -4,13 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: '#F3F5F2',
-        ink: '#14282B',
-        muted: '#5C6F70',
-        line: '#D9E0DC',
-        clinic: { DEFAULT: '#1F6F6B', dark: '#174F4C', soft: '#DCEBE8' },
-        amber: { DEFAULT: '#B9791A', soft: '#F6E8CC' },
-        slate: { DEFAULT: '#3A6EA5', dark: '#244A72', soft: '#DEE8F3' },
+        paper: '#F8F5F0',
+        ink: '#3B2A1A',
+        muted: '#75675A',
+        line: '#E6DDCF',
+        clinic: { DEFAULT: '#A5650F', dark: '#4A3522', soft: '#FBE9C8' },
+        amber: { DEFAULT: '#7A5200', soft: '#FCEFC9' },
+        slate: { DEFAULT: '#2F6B5E', dark: '#1F4A41', soft: '#DCEBE6' },
         rose: { DEFAULT: '#A8403A', soft: '#F4DEDB' },
       },
       fontFamily: {

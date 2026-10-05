@@ -30,7 +30,7 @@ export default function Layout({ title, intro, children }) {
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-3">
           <div className="flex items-center gap-8">
-            <Logo className="text-clinic" />
+            <Logo className="text-ink" size={28} />
             <nav aria-label="Main" className="flex gap-5 text-sm">
               {NAV[user.role].map((n) => (
                 <NavLink

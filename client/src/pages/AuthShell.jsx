@@ -4,7 +4,7 @@ import Logo from '../components/Logo'
 export const TONES = {
   patient: { panel: 'bg-clinic-dark', text: 'text-clinic', border: 'border-clinic', btn: '' },
   doctor: { panel: 'bg-slate-dark', text: 'text-slate', border: 'border-slate', btn: 'bg-slate hover:bg-slate-dark' },
-  admin: { panel: 'bg-ink', text: 'text-ink', border: 'border-ink', btn: 'bg-ink hover:bg-black' },
+  admin: { panel: 'bg-neutral-800', text: 'text-neutral-800', border: 'border-neutral-800', btn: 'bg-neutral-800 hover:bg-black' },
 }
 
 export default function AuthShell({ heading, children, footer, tone = 'patient' }) {
@@ -12,7 +12,7 @@ export default function AuthShell({ heading, children, footer, tone = 'patient' 
   return (
     <div className="grid min-h-screen md:grid-cols-[5fr_4fr]">
       <aside className={`hidden flex-col justify-between p-12 text-white md:flex ${t.panel}`}>
-        <Logo />
+        <Logo size={36} />
         <p className="max-w-md font-display text-4xl font-bold leading-tight">
           Book the visit. Keep the notes. Spend the day on patients, not paperwork.
         </p>
