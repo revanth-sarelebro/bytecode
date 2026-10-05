@@ -1,5 +1,8 @@
 import axios from 'axios'
 import { ENDPOINTS as E } from './endpoints'
+import * as mock from './mock'
+
+export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 const TOKEN_KEY = 'medisync_token'
 
@@ -57,46 +60,57 @@ export function errorMessage(err) {
 
 const data = (p) => p.then((r) => r.data)
 
-export const authApi = {
+const real_authApi = {
   login: (body) => data(api.post(E.auth.login, body)),
   register: (body) => data(api.post(E.auth.register, body)),
   me: () => data(api.get(E.auth.me)),
 }
 
-export const profileApi = {
+const real_profileApi = {
   update: (body) => data(api.patch(E.users.updateProfile, body)),
 }
 
-export const doctorApi = {
+const real_doctorApi = {
   list: () => data(api.get(E.doctors.list)),
 }
 
-export const appointmentApi = {
+const real_appointmentApi = {
   list: () => data(api.get(E.appointments.list)),
   create: (body) => data(api.post(E.appointments.create, body)),
   setStatus: (id, status) => data(api.patch(E.appointments.status(id), { status })),
   setNotes: (id, notes) => data(api.patch(E.appointments.notes(id), { notes })),
 }
 
-export const recordApi = {
+const real_recordApi = {
   mine: () => data(api.get(E.records.mine)),
   forPatient: (patientId) => data(api.get(E.records.forPatient(patientId))),
   create: (body) => data(api.post(E.records.create, body)),
 }
 
-export const adminApi = {
+const real_adminApi = {
   users: () => data(api.get(E.admin.users)),
   setActive: (id, active) => data(api.patch(E.admin.setActive(id), { active })),
 }
 
-export const adminExtraApi = {
+const real_adminExtraApi = {
   appointments: () => data(api.get(E.admin.appointments)),
   createDoctor: (body) => data(api.post(E.admin.createDoctor, body)),
   audit: (limit = 100) => data(api.get(E.admin.audit, { params: { limit } })),
 }
 
-export const chatApi = {
+const real_chatApi = {
   ask: (message) => data(api.post(E.ai.chat, { message })),
 }
+
+const pick = (name) => (USE_MOCK ? mock[name] : { authApi: real_authApi, profileApi: real_profileApi, doctorApi: real_doctorApi, appointmentApi: real_appointmentApi, recordApi: real_recordApi, adminApi: real_adminApi, adminExtraApi: real_adminExtraApi, chatApi: real_chatApi }[name])
+
+export const authApi = pick('authApi')
+export const profileApi = pick('profileApi')
+export const doctorApi = pick('doctorApi')
+export const appointmentApi = pick('appointmentApi')
+export const recordApi = pick('recordApi')
+export const adminApi = pick('adminApi')
+export const adminExtraApi = pick('adminExtraApi')
+export const chatApi = pick('chatApi')
 
 export default api
