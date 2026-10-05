@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(PATIENT)
+  createdAt    DateTime @default(now())
+
+  patientProfile PatientProfile?
+  doctorProfile  DoctorProfile?
+
+  patientAppointments Appointment[] @relation("PatientAppointments")
+  doctorAppointments  Appointment[] @relation("DoctorAppointments")
+
+  patientRecords MedicalRecord[] @relation("PatientRecords")
+  doctorRecords  MedicalRecord[] @relation("DoctorRecords")
+}
+
+model PatientProfile {
+  id          Int     @id @default(autoincrement())
+  userId      Int     @unique
+  phone       String?
+  dateOfBirth String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DoctorProfile {
+  id             Int     @id @default(autoincrement())
+  userId         Int     @unique
+  specialization String
+  licenseNumber  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Appointment {
+  id        Int               @id @default(autoincrement())
+  patientId Int
+  doctorId  Int
+  dateTime  DateTime
+  status    AppointmentStatus @default(PENDING)
+  reason    String?
+  createdAt DateTime          @default(now())
+
+  patient User @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctor User @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([doctorId])
+}
+
+model MedicalRecord {
+  id           Int      @id @default(autoincrement())
+  patientId    Int
+  doctorId     Int
+  diagnosis    String
+  prescription String?
+  date         DateTime @default(now())
+
+  patient User @relation("PatientRecords", fields: [patientId], references: [id], onDelete: Cascade)
+
+  doctor User @relation("DoctorRecords", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([doctorId])
+}
