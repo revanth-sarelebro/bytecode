@@ -68,6 +68,7 @@ export default function DoctorDashboard() {
 
   return (
     <Layout
+      welcome
       title="Patient queue"
       intro={loading ? '' : waiting ? `${waiting} request${waiting > 1 ? 's' : ''} waiting for your confirmation.` : 'Nothing waiting for confirmation.'}
     >

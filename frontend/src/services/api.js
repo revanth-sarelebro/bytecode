@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { ENDPOINTS as E } from './endpoints'
 
 const TOKEN_KEY = 'medisync_token'
 
@@ -25,7 +26,7 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err.response?.status
-    const isLoginCall = err.config?.url?.includes('/auth/login')
+    const isLoginCall = err.config?.url === E.auth.login
     if (status === 401 && !isLoginCall) {
       tokenStore.clear()
       window.dispatchEvent(new Event('medisync:logout'))
@@ -54,45 +55,48 @@ export function errorMessage(err) {
   }
 }
 
+const data = (p) => p.then((r) => r.data)
+
 export const authApi = {
-  login: (body) => api.post('/auth/login', body).then((r) => r.data),
-  register: (body) => api.post('/auth/register', body).then((r) => r.data),
-  me: () => api.get('/auth/me').then((r) => r.data),
+  login: (body) => data(api.post(E.auth.login, body)),
+  register: (body) => data(api.post(E.auth.register, body)),
+  me: () => data(api.get(E.auth.me)),
 }
 
-export const appointmentApi = {
-  list: () => api.get('/appointments').then((r) => r.data),
-  create: (body) => api.post('/appointments', body).then((r) => r.data),
-  setStatus: (id, status) => api.patch(`/appointments/${id}/status`, { status }).then((r) => r.data),
-  setNotes: (id, notes) => api.patch(`/appointments/${id}/notes`, { notes }).then((r) => r.data),
+export const profileApi = {
+  update: (body) => data(api.patch(E.users.updateProfile, body)),
 }
 
 export const doctorApi = {
-  list: () => api.get('/doctors').then((r) => r.data),
+  list: () => data(api.get(E.doctors.list)),
 }
 
-export const adminApi = {
-  users: () => api.get('/admin/users').then((r) => r.data),
-  setActive: (id, active) => api.patch(`/admin/users/${id}/active`, { active }).then((r) => r.data),
-}
-
-export const chatApi = {
-  ask: (message) => api.post('/chat', { message }).then((r) => r.data),
-}
-
-export default api
-
-export const profileApi = {
-  update: (body) => api.patch('/profile', body).then((r) => r.data),
+export const appointmentApi = {
+  list: () => data(api.get(E.appointments.list)),
+  create: (body) => data(api.post(E.appointments.create, body)),
+  setStatus: (id, status) => data(api.patch(E.appointments.status(id), { status })),
+  setNotes: (id, notes) => data(api.patch(E.appointments.notes(id), { notes })),
 }
 
 export const recordApi = {
-  mine: () => api.get('/records').then((r) => r.data),
-  forPatient: (patientId) => api.get(`/patients/${patientId}/records`).then((r) => r.data),
-  create: (body) => api.post('/records', body).then((r) => r.data),
+  mine: () => data(api.get(E.records.mine)),
+  forPatient: (patientId) => data(api.get(E.records.forPatient(patientId))),
+  create: (body) => data(api.post(E.records.create, body)),
+}
+
+export const adminApi = {
+  users: () => data(api.get(E.admin.users)),
+  setActive: (id, active) => data(api.patch(E.admin.setActive(id), { active })),
 }
 
 export const adminExtraApi = {
-  appointments: () => api.get('/admin/appointments').then((r) => r.data),
-  createDoctor: (body) => api.post('/admin/doctors', body).then((r) => r.data),
+  appointments: () => data(api.get(E.admin.appointments)),
+  createDoctor: (body) => data(api.post(E.admin.createDoctor, body)),
+  audit: (limit = 100) => data(api.get(E.admin.audit, { params: { limit } })),
 }
+
+export const chatApi = {
+  ask: (message) => data(api.post(E.ai.chat, { message })),
+}
+
+export default api

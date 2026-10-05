@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { LogOut } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -13,11 +14,21 @@ const NAV = {
     { to: '/patient/profile', label: 'Profile' },
   ],
   DOCTOR: [{ to: '/doctor', label: 'Patient queue', end: true }],
-  ADMIN: [{ to: '/admin', label: 'Clinic overview', end: true }],
+  ADMIN: [
+    { to: '/admin', label: 'Clinic overview', end: true },
+    { to: '/admin/audit', label: 'Audit log' },
+  ],
 }
 
-export default function Layout({ title, intro, children }) {
+// "Dr. Meera Iyer" -> "Dr. Meera", "Asha Reddy" -> "Asha"
+function greetingName(user) {
+  const first = user.name.replace(/^dr\.?\s+/i, '').trim().split(/\s+/)[0]
+  return user.role === 'DOCTOR' ? `Dr. ${first}` : first
+}
+
+export default function Layout({ title, intro, welcome = false, children }) {
   const { user, logout } = useAuth()
+  useEffect(() => { document.title = `${title} · MediSync` }, [title])
   const navigate = useNavigate()
 
   const signOut = () => {
@@ -55,7 +66,7 @@ export default function Layout({ title, intro, children }) {
       </header>
 
       <main className="mx-auto max-w-5xl px-5 py-8">
-        <h1 className="text-3xl font-bold">{title}</h1>
+        <h1 className="text-3xl font-bold">{welcome ? `Welcome, ${greetingName(user)}` : title}</h1>
         {intro && <p className="mt-1 max-w-xl text-muted">{intro}</p>}
         <div className="mt-8">{children}</div>
       </main>
