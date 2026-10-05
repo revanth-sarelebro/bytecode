@@ -22,6 +22,12 @@ React + Vite + Tailwind frontend for MediSync.
 | PATCH | /appointments/:id/notes | notes | appointment. Doctor only |
 | GET | /admin/users | none | [{id, name, email, role, active}] |
 | PATCH | /admin/users/:id/active | active (bool) | user |
+| PATCH | /profile | name, phone, dateOfBirth, bloodGroup | updated user. Acts on caller only |
+| GET | /records | none | patient's own records [{id, doctorName, diagnosis, prescriptions, createdAt}] |
+| GET | /patients/:id/records | none | doctor/admin only |
+| POST | /records | patientId, diagnosis, prescriptions | record. Doctor only |
+| GET | /admin/appointments | none | all appointments. Admin only |
+| POST | /admin/doctors | name, email, speciality, password | user with role DOCTOR. Admin only |
 | POST | /chat | message | { reply } |
 
-Appointment shape: `{ id, doctorName, patientName, date, reason, status, notes }`
+Appointment shape: `{ id, patientId, doctorName, patientName, date, reason, status, notes }`

@@ -4,6 +4,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import PatientDashboard from './pages/PatientDashboard'
+import PatientProfile from './pages/PatientProfile'
+import PatientRecords from './pages/PatientRecords'
 import DoctorDashboard from './pages/DoctorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import { HOME } from './lib/status'
@@ -18,11 +20,13 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/login/:portal?" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       <Route element={<ProtectedRoute roles={['PATIENT']} />}>
         <Route path="/patient" element={<PatientDashboard />} />
+        <Route path="/patient/records" element={<PatientRecords />} />
+        <Route path="/patient/profile" element={<PatientProfile />} />
       </Route>
       <Route element={<ProtectedRoute roles={['DOCTOR']} />}>
         <Route path="/doctor" element={<DoctorDashboard />} />

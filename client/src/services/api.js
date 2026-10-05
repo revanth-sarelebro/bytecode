@@ -81,3 +81,18 @@ export const chatApi = {
 }
 
 export default api
+
+export const profileApi = {
+  update: (body) => api.patch('/profile', body).then((r) => r.data),
+}
+
+export const recordApi = {
+  mine: () => api.get('/records').then((r) => r.data),
+  forPatient: (patientId) => api.get(`/patients/${patientId}/records`).then((r) => r.data),
+  create: (body) => api.post('/records', body).then((r) => r.data),
+}
+
+export const adminExtraApi = {
+  appointments: () => api.get('/admin/appointments').then((r) => r.data),
+  createDoctor: (body) => api.post('/admin/doctors', body).then((r) => r.data),
+}

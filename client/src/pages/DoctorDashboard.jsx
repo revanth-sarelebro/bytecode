@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 import StatusBadge from '../components/StatusBadge'
+import RecordPanel from '../components/RecordPanel'
 import { appointmentApi, errorMessage } from '../services/api'
 import { notesSchema, validate } from '../lib/schemas'
 import { ACTION_LABEL, NEXT_STATUS, formatDate } from '../lib/status'
@@ -39,6 +40,7 @@ export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState('')
+  const [openRecords, setOpenRecords] = useState(null)
 
   const load = useCallback(async () => {
     try {
@@ -100,6 +102,19 @@ export default function DoctorDashboard() {
 
               {(a.status === 'CONFIRMED' || a.status === 'COMPLETED') && (
                 <NotesEditor appointment={a} onSaved={load} onError={setPageError} />
+              )}
+
+              {(a.status === 'CONFIRMED' || a.status === 'COMPLETED') && (
+                <>
+                  <button
+                    onClick={() => setOpenRecords(openRecords === a.id ? null : a.id)}
+                    className="btn-quiet mt-4"
+                    aria-expanded={openRecords === a.id}
+                  >
+                    {openRecords === a.id ? 'Hide medical records' : 'Medical records'}
+                  </button>
+                  {openRecords === a.id && <RecordPanel patientId={a.patientId} />}
+                </>
               )}
             </li>
           ))}

@@ -1,10 +1,20 @@
 import { LogOut } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Logo from './Logo'
 import ChatWidget from './ChatWidget'
 
 const ROLE_TEXT = { PATIENT: 'Patient', DOCTOR: 'Doctor', ADMIN: 'Administrator' }
+
+const NAV = {
+  PATIENT: [
+    { to: '/patient', label: 'Appointments', end: true },
+    { to: '/patient/records', label: 'Medical records' },
+    { to: '/patient/profile', label: 'Profile' },
+  ],
+  DOCTOR: [{ to: '/doctor', label: 'Patient queue', end: true }],
+  ADMIN: [{ to: '/admin', label: 'Clinic overview', end: true }],
+}
 
 export default function Layout({ title, intro, children }) {
   const { user, logout } = useAuth()
@@ -18,8 +28,20 @@ export default function Layout({ title, intro, children }) {
   return (
     <div className="min-h-screen">
       <header className="border-b border-line bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
-          <Logo className="text-clinic" />
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-3">
+          <div className="flex items-center gap-8">
+            <Logo className="text-clinic" />
+            <nav aria-label="Main" className="flex gap-5 text-sm">
+              {NAV[user.role].map((n) => (
+                <NavLink
+                  key={n.to} to={n.to} end={n.end}
+                  className={({ isActive }) => `pb-0.5 ${isActive ? 'border-b-2 border-clinic font-semibold' : 'text-muted hover:text-ink'}`}
+                >
+                  {n.label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
           <div className="flex items-center gap-4 text-sm">
             <span>
               <span className="font-semibold">{user.name}</span>

@@ -8,7 +8,7 @@ export default function AuthShell({ heading, children, footer }) {
         <p className="max-w-md font-display text-4xl font-bold leading-tight">
           Book the visit. Keep the notes. Spend the day on patients, not paperwork.
         </p>
-        <p className="text-sm text-white/70">Demo build. All patient data shown is made up.</p>
+        <span aria-hidden="true" />
       </aside>
 
       <main className="flex items-center px-6 py-12 md:px-14">

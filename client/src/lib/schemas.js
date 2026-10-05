@@ -44,3 +44,30 @@ export function validate(schema, values) {
   }
   return { errors }
 }
+
+export const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+
+export const profileSchema = z.object({
+  name: z.string().trim().min(2, 'Enter your full name').max(80, 'Name is too long'),
+  phone: z.string().trim().regex(/^[0-9+\-\s]{7,15}$/, 'Enter a valid phone number').or(z.literal('')),
+  dateOfBirth: z
+    .string()
+    .refine((v) => v === '' || new Date(v).getTime() < Date.now(), 'Date of birth must be in the past'),
+  bloodGroup: z.enum(BLOOD_GROUPS).or(z.literal('')),
+})
+
+export const recordSchema = z.object({
+  diagnosis: z.string().trim().min(3, 'Enter a diagnosis').max(500, 'Keep it under 500 characters'),
+  prescriptions: z.string().trim().max(500, 'Keep it under 500 characters'),
+})
+
+export const doctorSchema = z.object({
+  name: z.string().trim().min(2, 'Enter the doctor name').max(80, 'Name is too long'),
+  email: z.string().trim().toLowerCase().email('Enter a valid email address'),
+  speciality: z.string().trim().min(2, 'Enter a speciality').max(60, 'Too long'),
+  password: z
+    .string()
+    .min(8, 'Use at least 8 characters')
+    .regex(/[A-Za-z]/, 'Include at least one letter')
+    .regex(/[0-9]/, 'Include at least one number'),
+})

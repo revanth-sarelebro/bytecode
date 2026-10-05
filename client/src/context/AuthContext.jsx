@@ -24,8 +24,12 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('medisync:logout', logout)
   }, [logout])
 
-  const login = async (values) => {
+  // expectedRole: which sign-in page the person used. Wrong portal = no session is created.
+  const login = async (values, expectedRole) => {
     const { token, user } = await authApi.login(values)
+    if (expectedRole && user.role !== expectedRole) {
+      throw Object.assign(new Error('wrong portal'), { actualRole: user.role })
+    }
     tokenStore.set(token)
     setUser(user)
     return user
@@ -39,7 +43,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )
