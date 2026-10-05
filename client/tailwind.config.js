@@ -10,7 +10,7 @@ export default {
         line: '#D9E0DC',
         clinic: { DEFAULT: '#1F6F6B', dark: '#174F4C', soft: '#DCEBE8' },
         amber: { DEFAULT: '#B9791A', soft: '#F6E8CC' },
-        slate: { DEFAULT: '#3A6EA5', soft: '#DEE8F3' },
+        slate: { DEFAULT: '#3A6EA5', dark: '#244A72', soft: '#DEE8F3' },
         rose: { DEFAULT: '#A8403A', soft: '#F4DEDB' },
       },
       fontFamily: {

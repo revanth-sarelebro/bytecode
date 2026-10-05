@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { errorMessage } from '../services/api'
 import { loginSchema, validate } from '../lib/schemas'
 import { HOME } from '../lib/status'
-import AuthShell from './AuthShell'
+import AuthShell, { TONES } from './AuthShell'
 import Field from '../components/Field'
 
 const PORTALS = {
@@ -18,6 +18,7 @@ export default function Login() {
   const { portal: param } = useParams()
   const portalKey = PORTALS[param] ? param : 'patient'
   const portal = PORTALS[portalKey]
+  const tone = TONES[portalKey]
 
   const { user, login } = useAuth()
   const navigate = useNavigate()
@@ -53,14 +54,15 @@ export default function Login() {
   }
 
   const tab = ({ isActive }) =>
-    `flex-1 border-b-2 px-3 py-2 text-center font-semibold ${isActive ? 'border-clinic text-clinic' : 'border-line text-muted hover:text-ink'}`
+    `flex-1 border-b-2 px-3 py-2 text-center font-semibold ${isActive ? `${tone.border} ${tone.text}` : 'border-line text-muted hover:text-ink'}`
 
   return (
     <AuthShell
+      tone={portalKey}
       heading={portal.heading}
       footer={
         portalKey === 'patient' ? (
-          <>New patient? <Link to="/register" className="font-semibold text-clinic underline">Create an account</Link></>
+          <>New patient? <Link to="/register" className={`font-semibold underline ${tone.text}`}>Create an account</Link></>
         ) : portalKey === 'doctor' ? (
           <>Doctor accounts are created by the clinic administrator.</>
         ) : (
@@ -77,7 +79,7 @@ export default function Login() {
         <Field label="Email" type="email" autoComplete="email" value={values.email} onChange={set('email')} error={errors.email} />
         <Field label="Password" type="password" autoComplete="current-password" value={values.password} onChange={set('password')} error={errors.password} />
         {formError && <p role="alert" className="rounded bg-rose-soft px-3 py-2 text-sm text-rose">{formError}</p>}
-        <button className="btn w-full" disabled={busy}>{busy ? 'Signing in…' : `Sign in as ${portal.word}`}</button>
+        <button className={`btn w-full ${tone.btn}`} disabled={busy}>{busy ? 'Signing in…' : `Sign in as ${portal.word}`}</button>
       </form>
 
       {portalKey !== 'admin' && (
