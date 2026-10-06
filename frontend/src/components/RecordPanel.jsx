@@ -35,8 +35,8 @@ export default function RecordPanel({ patientId }) {
   }
 
   return (
-    <div className="mt-4 border-t border-line pt-4">
-      <h3 className="text-lg font-bold">Medical records</h3>
+    <div>
+      <h3 className="mt-3 font-display text-lg font-bold">Diagnoses</h3>
       {error && <p role="alert" className="mt-2 text-sm text-rose">{error}</p>}
 
       {records.length === 0 ? (
@@ -44,7 +44,7 @@ export default function RecordPanel({ patientId }) {
       ) : (
         <ul className="mt-2 space-y-2 text-sm">
           {records.map((r) => (
-            <li key={r.id} className="rounded bg-paper p-3">
+            <li key={r.id} className="rounded bg-white/60 p-3">
               <p className="text-muted">{formatDate(r.createdAt)} · {r.doctorName}</p>
               <p><span className="font-semibold">Diagnosis: </span>{r.diagnosis}</p>
               {r.prescriptions && <p><span className="font-semibold">Prescription: </span>{r.prescriptions}</p>}

@@ -35,6 +35,31 @@ function seed() {
     records: [
       { id: 'r1', patientId: 'u1', doctorId: 'd1', diagnosis: 'Mild tension headache', prescriptions: 'Paracetamol 500 mg when needed. Rest and fluids.', createdAt: at(-14, 9, 40) },
     ],
+    reports: [
+      {
+        id: 'rp1', patientId: 'u1', doctorId: 'd1', type: 'BLOOD_TEST', title: 'Complete blood count and glucose', createdAt: at(-14, 8, 15),
+        results: [
+          { name: 'Hemoglobin', value: '13.2', unit: 'g/dL', low: 12, high: 16 },
+          { name: 'White blood cells', value: '11.8', unit: '10^3/uL', low: 4, high: 11 },
+          { name: 'Platelets', value: '250', unit: '10^3/uL', low: 150, high: 400 },
+          { name: 'Fasting glucose', value: '92', unit: 'mg/dL', low: 70, high: 100 },
+        ],
+        findings: 'White cell count is slightly above the reference range. Other values are normal.',
+        impression: 'Mild raised white cells. Repeat the test in four weeks.',
+      },
+      {
+        id: 'rp2', patientId: 'u1', doctorId: 'd1', type: 'XRAY', title: 'Chest X-ray (front view)', createdAt: at(-10, 12, 0),
+        results: [],
+        findings: 'Both lungs are clear. No consolidation, fluid or collapse. Heart size is normal. The bones and soft tissues look normal.',
+        impression: 'No acute abnormality seen.',
+      },
+    ],
+    medications: [
+      { id: 'm1', patientId: 'u1', doctorId: 'd1', name: 'Paracetamol', dosage: '500 mg', frequency: 'Every 8 hours when needed', durationDays: 5, startDate: at(-14, 9, 45), notes: 'Do not take more than 3 doses in a day.' },
+      { id: 'm2', patientId: 'u1', doctorId: 'd1', name: 'Vitamin D3', dosage: '1000 IU', frequency: 'Once daily', durationDays: 60, startDate: at(-10, 12, 30), notes: 'Take after breakfast.' },
+      { id: 'm3', patientId: 'u1', doctorId: 'd2', name: 'Cetirizine', dosage: '10 mg', frequency: 'Once at night', durationDays: 14, startDate: at(-2, 17, 0), notes: 'May cause drowsiness.' },
+    ],
+    challenges: {},
     audit: [
       { id: 'l1', actorName: 'Dr. Meera Iyer', actorRole: 'DOCTOR', action: 'RECORD_CREATE', target: 'Asha Reddy', createdAt: at(-14, 9, 40) },
       { id: 'l2', actorName: 'Asha Reddy', actorRole: 'PATIENT', action: 'APPOINTMENT_CREATE', target: 'Dr. Karan Mehta', createdAt: at(-1, 10, 12) },
@@ -45,7 +70,12 @@ function seed() {
 function load() {
   try {
     const raw = localStorage.getItem(DB_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const db = JSON.parse(raw)
+      const fresh = seed()
+      for (const k of Object.keys(fresh)) if (!(k in db)) db[k] = fresh[k]
+      return db
+    }
   } catch { /* fall through to fresh data */ }
   const fresh = seed()
   localStorage.setItem(DB_KEY, JSON.stringify(fresh))
@@ -88,7 +118,19 @@ const hasRelation = (db, doctorId, patientId) =>
 
 const byDateDesc = (a, b) => new Date(b.date) - new Date(a.date)
 
+const OTP_SECONDS = 300
+const MAX_OTP_TRIES = 5
+
+function newChallenge(db, userId, existingId) {
+  const id = existingId ?? uid('c')
+  const code = String(Math.floor(100000 + Math.random() * 900000))
+  db.challenges[id] = { userId, code, expires: Date.now() + OTP_SECONDS * 1000, tries: 0 }
+  // devCode stands in for the email or SMS. A real server never sends it back.
+  return { otpRequired: true, challengeId: id, expiresInSeconds: OTP_SECONDS, devCode: code }
+}
+
 export const authApi = {
+  // Step 1: password. Returns an OTP challenge, not a session.
   async login({ email, password }) {
     await delay()
     const db = load()
@@ -98,9 +140,49 @@ export const authApi = {
       save(db)
       fail(401, 'Email or password is incorrect.')
     }
+    const challenge = newChallenge(db, user.id)
+    save(db)
+    return challenge
+  },
+
+  // Step 2: the 6-digit code. Only now is a session created.
+  async verifyOtp({ challengeId, code }) {
+    await delay()
+    const db = load()
+    const c = db.challenges[challengeId]
+    if (!c) fail(401, 'That code is incorrect or has expired.')
+    const user = db.users.find((u) => u.id === c.userId)
+    if (c.tries >= MAX_OTP_TRIES) {
+      delete db.challenges[challengeId]
+      log(db, user, 'LOGIN_FAILED', 'too many wrong codes')
+      save(db)
+      fail(429, 'Too many attempts.')
+    }
+    if (Date.now() > c.expires) {
+      delete db.challenges[challengeId]
+      save(db)
+      fail(401, 'That code is incorrect or has expired.')
+    }
+    if (c.code !== code) {
+      c.tries += 1
+      log(db, user, 'LOGIN_FAILED', 'wrong verification code')
+      save(db)
+      fail(401, 'That code is incorrect or has expired.')
+    }
+    delete db.challenges[challengeId]
     log(db, user, 'LOGIN')
     save(db)
     return { token: user.id, user: publicUser(user) }
+  },
+
+  async resendOtp({ challengeId }) {
+    await delay()
+    const db = load()
+    const c = db.challenges[challengeId]
+    if (!c) fail(401, 'That code is incorrect or has expired.')
+    const next = newChallenge(db, c.userId, challengeId)
+    save(db)
+    return next
   },
 
   async register({ name, email, password }) {
@@ -235,6 +317,77 @@ export const recordApi = {
   },
 }
 
+const medStatus = (m) => (new Date(m.startDate).getTime() + m.durationDays * 86400000 > Date.now() ? 'ACTIVE' : 'COMPLETED')
+const shapeMed = (db, m) => ({ ...m, doctorName: nameOf(db, m.doctorId), status: medStatus(m) })
+const shapeReport = (db, r) => ({ ...r, doctorName: nameOf(db, r.doctorId) })
+const newest = (a, b) => new Date(b.createdAt ?? b.startDate) - new Date(a.createdAt ?? a.startDate)
+
+export const reportApi = {
+  async mine() {
+    await delay()
+    const db = load()
+    const me = current(db)
+    need(me, 'PATIENT')
+    return db.reports.filter((r) => r.patientId === me.id).sort(newest).map((r) => shapeReport(db, r))
+  },
+
+  async forPatient(patientId) {
+    await delay()
+    const db = load()
+    const me = current(db)
+    need(me, 'DOCTOR')
+    if (!hasRelation(db, me.id, patientId)) { log(db, me, 'ACCESS_DENIED', `reports of ${nameOf(db, patientId)}`); save(db); fail(403, 'You do not have permission to do that.') }
+    log(db, me, 'REPORT_VIEW', nameOf(db, patientId))
+    save(db)
+    return db.reports.filter((r) => r.patientId === patientId).sort(newest).map((r) => shapeReport(db, r))
+  },
+
+  async create({ patientId, type, title, results, findings, impression }) {
+    await delay()
+    const db = load()
+    const me = current(db)
+    need(me, 'DOCTOR')
+    if (!hasRelation(db, me.id, patientId)) fail(403, 'You do not have permission to do that.')
+    const r = { id: uid('rp'), patientId, doctorId: me.id, type, title, results: results ?? [], findings, impression, createdAt: new Date().toISOString() }
+    db.reports.push(r)
+    log(db, me, 'REPORT_CREATE', nameOf(db, patientId))
+    save(db)
+    return shapeReport(db, r)
+  },
+}
+
+export const medicationApi = {
+  async mine() {
+    await delay()
+    const db = load()
+    const me = current(db)
+    need(me, 'PATIENT')
+    return db.medications.filter((m) => m.patientId === me.id).sort(newest).map((m) => shapeMed(db, m))
+  },
+
+  async forPatient(patientId) {
+    await delay()
+    const db = load()
+    const me = current(db)
+    need(me, 'DOCTOR')
+    if (!hasRelation(db, me.id, patientId)) { log(db, me, 'ACCESS_DENIED', `medications of ${nameOf(db, patientId)}`); save(db); fail(403, 'You do not have permission to do that.') }
+    return db.medications.filter((m) => m.patientId === patientId).sort(newest).map((m) => shapeMed(db, m))
+  },
+
+  async create({ patientId, name, dosage, frequency, durationDays, notes }) {
+    await delay()
+    const db = load()
+    const me = current(db)
+    need(me, 'DOCTOR')
+    if (!hasRelation(db, me.id, patientId)) fail(403, 'You do not have permission to do that.')
+    const m = { id: uid('m'), patientId, doctorId: me.id, name, dosage, frequency, durationDays, notes, startDate: new Date().toISOString() }
+    db.medications.push(m)
+    log(db, me, 'MEDICATION_CREATE', `${name} for ${nameOf(db, patientId)}`)
+    save(db)
+    return shapeMed(db, m)
+  },
+}
+
 export const adminApi = {
   async users() {
     await delay()
@@ -299,6 +452,10 @@ export const chatApi = {
       reply = 'Open Appointments, find the visit and press Cancel. You can cancel while it is waiting or confirmed.'
     } else if (/book|appointment|schedule/.test(m)) {
       reply = 'Use the Book a visit form on the Appointments page. Pick a doctor, a time and a reason. The doctor then confirms it.'
+    } else if (/report|blood|x-?ray|test result/.test(m)) {
+      reply = 'Your full lab and X-ray reports are under Reports in the top menu. You can print them from there.'
+    } else if (/medicine|medication|tablet|dose/.test(m)) {
+      reply = 'Your current and past medicines are under Medications in the top menu.'
     } else if (/record|prescription|diagnos/.test(m)) {
       reply = 'Your diagnoses and prescriptions are under Medical records in the top menu.'
     } else if (/profile|phone|blood/.test(m)) {

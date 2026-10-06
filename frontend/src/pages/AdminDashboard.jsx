@@ -106,7 +106,7 @@ export default function AdminDashboard() {
             {activity.length === 0 ? (
               <p className="text-muted">No activity recorded yet.</p>
             ) : (
-              <ul className="divide-y divide-line rounded border border-line bg-white text-sm">
+              <ul className="divide-y divide-line glass text-sm">
                 {activity.map((e) => (
                   <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                     <span>
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
 
           <section>
             <h2 className="mb-3 text-xl font-bold">People</h2>
-            <div className="overflow-x-auto rounded border border-line bg-white">
+            <div className="overflow-x-auto glass">
               <table className="w-full text-left">
                 <thead className="border-b border-line bg-paper text-sm">
                   <tr>
@@ -156,7 +156,7 @@ export default function AdminDashboard() {
           </section>
 
           <section className="grid gap-8 md:grid-cols-[2fr_3fr]">
-            <form onSubmit={addDoctor} noValidate className="space-y-4 self-start rounded border border-line bg-white p-5">
+            <form onSubmit={addDoctor} noValidate className="space-y-4 self-start glass p-5">
               <h2 className="text-xl font-bold">Add a doctor</h2>
               <Field label="Full name" value={values.name} onChange={set('name')} error={errors.name} />
               <Field label="Email" type="email" value={values.email} onChange={set('email')} error={errors.email} />
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
               {appointments.length === 0 ? (
                 <p className="text-muted">No appointments booked yet.</p>
               ) : (
-                <ul className="divide-y divide-line rounded border border-line bg-white">
+                <ul className="divide-y divide-line glass">
                   {appointments.map((a) => (
                     <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 p-4">
                       <div>
@@ -192,7 +192,7 @@ export default function AdminDashboard() {
               <p className="text-muted">No activity recorded yet.</p>
             ) : (
               <>
-                <div className="overflow-x-auto rounded border border-line bg-white">
+                <div className="overflow-x-auto glass">
                   <table className="w-full text-left text-sm">
                     <thead className="border-b border-line bg-paper">
                       <tr>

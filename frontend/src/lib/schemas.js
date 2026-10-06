@@ -71,3 +71,25 @@ export const doctorSchema = z.object({
     .regex(/[A-Za-z]/, 'Include at least one letter')
     .regex(/[0-9]/, 'Include at least one number'),
 })
+
+export const otpSchema = z.object({
+  code: z.string().trim().regex(/^\d{6}$/, 'Enter the 6-digit code'),
+})
+
+export const REPORT_TYPE_KEYS = ['BLOOD_TEST', 'XRAY', 'SCAN', 'OTHER']
+
+export const reportSchema = z.object({
+  type: z.enum(REPORT_TYPE_KEYS),
+  title: z.string().trim().min(3, 'Enter a report title').max(100, 'Title is too long'),
+  resultsText: z.string().max(2000, 'Too long'),
+  findings: z.string().trim().max(1500, 'Keep findings under 1500 characters'),
+  impression: z.string().trim().max(500, 'Keep the impression under 500 characters'),
+})
+
+export const medicationSchema = z.object({
+  name: z.string().trim().min(2, 'Enter the medicine name').max(80, 'Name is too long'),
+  dosage: z.string().trim().min(1, 'Enter the dose').max(60, 'Too long'),
+  frequency: z.string().trim().min(2, 'Enter how often').max(80, 'Too long'),
+  durationDays: z.coerce.number({ invalid_type_error: 'Enter a number of days' }).int('Use whole days').min(1, 'At least 1 day').max(365, 'At most 365 days'),
+  notes: z.string().trim().max(300, 'Keep notes under 300 characters'),
+})

@@ -64,7 +64,7 @@ export default function PatientDashboard() {
       {pageError && <p role="alert" className="mb-6 rounded bg-rose-soft px-3 py-2 text-rose">{pageError}</p>}
 
       <div className="grid gap-10 md:grid-cols-[2fr_3fr]">
-        <form onSubmit={book} noValidate className="space-y-4 self-start rounded border border-line bg-white p-5">
+        <form onSubmit={book} noValidate className="space-y-4 self-start glass p-5">
           <h2 className="text-xl font-bold">Book a visit</h2>
           <Field as="select" label="Doctor" value={values.doctorId} onChange={set('doctorId')} error={errors.doctorId}>
             <option value="">Choose a doctor</option>
@@ -84,7 +84,7 @@ export default function PatientDashboard() {
           ) : appointments.length === 0 ? (
             <p className="text-muted">No appointments yet. Use the form to request your first one.</p>
           ) : (
-            <ul className="divide-y divide-line rounded border border-line bg-white">
+            <ul className="divide-y divide-line glass">
               {appointments.map((a) => (
                 <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
                   <div>

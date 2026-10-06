@@ -12,6 +12,9 @@ export const ACTION_TEXT = {
   USER_ENABLED: 'Enabled account',
   DOCTOR_CREATE: 'Added doctor',
   ACCESS_DENIED: 'Blocked: no permission',
+  REPORT_VIEW: 'Viewed lab report',
+  REPORT_CREATE: 'Added lab report',
+  MEDICATION_CREATE: 'Prescribed medication',
 }
 
 export const actionText = (code) => ACTION_TEXT[code] ?? code

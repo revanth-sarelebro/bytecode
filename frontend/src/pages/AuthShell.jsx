@@ -11,16 +11,18 @@ export default function AuthShell({ heading, children, footer, tone = 'patient' 
   const t = TONES[tone]
   return (
     <div className="grid min-h-screen md:grid-cols-[5fr_4fr]">
-      <aside className={`hidden flex-col justify-between p-12 text-white md:flex ${t.panel}`}>
+      <aside className={`relative hidden flex-col justify-between overflow-hidden p-12 text-white md:flex ${t.panel}`}>
+        <div aria-hidden="true" className="pointer-events-none absolute -right-24 top-1/4 h-80 w-80 rounded-full bg-[#E39E40]/25 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -left-16 h-64 w-64 rounded-full bg-[#FBE096]/15 blur-3xl" />
         <Logo size={36} />
-        <p className="max-w-md font-display text-4xl font-bold leading-tight">
+        <p className="relative max-w-md font-display text-4xl font-bold leading-tight">
           Book the visit. Keep the notes. Spend the day on patients, not paperwork.
         </p>
-        <span aria-hidden="true" />
+        <span aria-hidden="true" className="relative" />
       </aside>
 
       <main className="flex items-center px-6 py-12 md:px-14">
-        <div className="w-full max-w-sm">
+        <div className="glass w-full max-w-sm p-8">
           <Logo className={`mb-8 md:hidden ${t.text}`} />
           <h1 className="mb-6 text-3xl font-bold">{heading}</h1>
           {children}

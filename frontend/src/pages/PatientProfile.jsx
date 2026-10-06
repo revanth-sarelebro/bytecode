@@ -40,7 +40,7 @@ export default function PatientProfile() {
 
   return (
     <Layout title="Your profile" intro="Doctors see these details when you book a visit.">
-      <form onSubmit={save} noValidate className="max-w-md space-y-4 rounded border border-line bg-white p-5">
+      <form onSubmit={save} noValidate className="max-w-md space-y-4 glass p-5">
         <div>
           <p className="label">Email</p>
           <p className="text-muted">{user.email}</p>

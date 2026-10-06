@@ -35,14 +35,14 @@ export default function ChatWidget() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="btn fixed bottom-5 right-5 gap-2 shadow-lg">
+      <button onClick={() => setOpen(true)} className="btn no-print fixed bottom-5 right-5 gap-2 shadow-lg">
         <MessageCircle size={18} aria-hidden="true" /> Ask a question
       </button>
     )
   }
 
   return (
-    <section aria-label="Clinic assistant" className="fixed bottom-5 right-5 flex h-96 w-80 flex-col rounded border border-line bg-white shadow-xl">
+    <section aria-label="Clinic assistant" className="no-print fixed bottom-5 right-5 flex h-96 w-80 flex-col glass shadow-xl">
       <div className="flex items-center justify-between border-b border-line px-3 py-2">
         <h2 className="font-display font-bold">Clinic assistant</h2>
         <button onClick={() => setOpen(false)} aria-label="Close chat"><X size={18} /></button>

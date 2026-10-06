@@ -6,6 +6,8 @@ import Register from './pages/Register'
 import PatientDashboard from './pages/PatientDashboard'
 import PatientProfile from './pages/PatientProfile'
 import PatientRecords from './pages/PatientRecords'
+import PatientReports from './pages/PatientReports'
+import PatientMedications from './pages/PatientMedications'
 import DoctorDashboard from './pages/DoctorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminAudit from './pages/AdminAudit'
@@ -27,6 +29,8 @@ export default function App() {
       <Route element={<ProtectedRoute roles={['PATIENT']} />}>
         <Route path="/patient" element={<PatientDashboard />} />
         <Route path="/patient/records" element={<PatientRecords />} />
+        <Route path="/patient/reports" element={<PatientReports />} />
+        <Route path="/patient/medications" element={<PatientMedications />} />
         <Route path="/patient/profile" element={<PatientProfile />} />
       </Route>
       <Route element={<ProtectedRoute roles={['DOCTOR']} />}>

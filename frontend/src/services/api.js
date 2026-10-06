@@ -25,12 +25,14 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// These calls happen before a session exists, so a 401 there is not "session expired".
+const PRE_SESSION = [E.auth.login, E.auth.verifyOtp, E.auth.resendOtp]
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err.response?.status
-    const isLoginCall = err.config?.url === E.auth.login
-    if (status === 401 && !isLoginCall) {
+    if (status === 401 && !PRE_SESSION.includes(err.config?.url)) {
       tokenStore.clear()
       window.dispatchEvent(new Event('medisync:logout'))
     }
@@ -60,57 +62,67 @@ export function errorMessage(err) {
 
 const data = (p) => p.then((r) => r.data)
 
-const real_authApi = {
-  login: (body) => data(api.post(E.auth.login, body)),
-  register: (body) => data(api.post(E.auth.register, body)),
-  me: () => data(api.get(E.auth.me)),
+const real = {
+  authApi: {
+    // Returns { otpRequired: true, challengeId, expiresInSeconds } or { token, user }
+    login: (body) => data(api.post(E.auth.login, body)),
+    verifyOtp: (body) => data(api.post(E.auth.verifyOtp, body)),
+    resendOtp: (body) => data(api.post(E.auth.resendOtp, body)),
+    register: (body) => data(api.post(E.auth.register, body)),
+    me: () => data(api.get(E.auth.me)),
+  },
+  profileApi: {
+    update: (body) => data(api.patch(E.users.updateProfile, body)),
+  },
+  doctorApi: {
+    list: () => data(api.get(E.doctors.list)),
+  },
+  appointmentApi: {
+    list: () => data(api.get(E.appointments.list)),
+    create: (body) => data(api.post(E.appointments.create, body)),
+    setStatus: (id, status) => data(api.patch(E.appointments.status(id), { status })),
+    setNotes: (id, notes) => data(api.patch(E.appointments.notes(id), { notes })),
+  },
+  recordApi: {
+    mine: () => data(api.get(E.records.mine)),
+    forPatient: (patientId) => data(api.get(E.records.forPatient(patientId))),
+    create: (body) => data(api.post(E.records.create, body)),
+  },
+  reportApi: {
+    mine: () => data(api.get(E.reports.mine)),
+    forPatient: (patientId) => data(api.get(E.reports.forPatient(patientId))),
+    create: (body) => data(api.post(E.reports.create, body)),
+  },
+  medicationApi: {
+    mine: () => data(api.get(E.medications.mine)),
+    forPatient: (patientId) => data(api.get(E.medications.forPatient(patientId))),
+    create: (body) => data(api.post(E.medications.create, body)),
+  },
+  adminApi: {
+    users: () => data(api.get(E.admin.users)),
+    setActive: (id, active) => data(api.patch(E.admin.setActive(id), { active })),
+  },
+  adminExtraApi: {
+    appointments: () => data(api.get(E.admin.appointments)),
+    createDoctor: (body) => data(api.post(E.admin.createDoctor, body)),
+    audit: (limit = 100) => data(api.get(E.admin.audit, { params: { limit } })),
+  },
+  chatApi: {
+    ask: (message) => data(api.post(E.ai.chat, { message })),
+  },
 }
 
-const real_profileApi = {
-  update: (body) => data(api.patch(E.users.updateProfile, body)),
-}
+const impl = USE_MOCK ? mock : real
 
-const real_doctorApi = {
-  list: () => data(api.get(E.doctors.list)),
-}
-
-const real_appointmentApi = {
-  list: () => data(api.get(E.appointments.list)),
-  create: (body) => data(api.post(E.appointments.create, body)),
-  setStatus: (id, status) => data(api.patch(E.appointments.status(id), { status })),
-  setNotes: (id, notes) => data(api.patch(E.appointments.notes(id), { notes })),
-}
-
-const real_recordApi = {
-  mine: () => data(api.get(E.records.mine)),
-  forPatient: (patientId) => data(api.get(E.records.forPatient(patientId))),
-  create: (body) => data(api.post(E.records.create, body)),
-}
-
-const real_adminApi = {
-  users: () => data(api.get(E.admin.users)),
-  setActive: (id, active) => data(api.patch(E.admin.setActive(id), { active })),
-}
-
-const real_adminExtraApi = {
-  appointments: () => data(api.get(E.admin.appointments)),
-  createDoctor: (body) => data(api.post(E.admin.createDoctor, body)),
-  audit: (limit = 100) => data(api.get(E.admin.audit, { params: { limit } })),
-}
-
-const real_chatApi = {
-  ask: (message) => data(api.post(E.ai.chat, { message })),
-}
-
-const pick = (name) => (USE_MOCK ? mock[name] : { authApi: real_authApi, profileApi: real_profileApi, doctorApi: real_doctorApi, appointmentApi: real_appointmentApi, recordApi: real_recordApi, adminApi: real_adminApi, adminExtraApi: real_adminExtraApi, chatApi: real_chatApi }[name])
-
-export const authApi = pick('authApi')
-export const profileApi = pick('profileApi')
-export const doctorApi = pick('doctorApi')
-export const appointmentApi = pick('appointmentApi')
-export const recordApi = pick('recordApi')
-export const adminApi = pick('adminApi')
-export const adminExtraApi = pick('adminExtraApi')
-export const chatApi = pick('chatApi')
+export const authApi = impl.authApi
+export const profileApi = impl.profileApi
+export const doctorApi = impl.doctorApi
+export const appointmentApi = impl.appointmentApi
+export const recordApi = impl.recordApi
+export const reportApi = impl.reportApi
+export const medicationApi = impl.medicationApi
+export const adminApi = impl.adminApi
+export const adminExtraApi = impl.adminExtraApi
+export const chatApi = impl.chatApi
 
 export default api

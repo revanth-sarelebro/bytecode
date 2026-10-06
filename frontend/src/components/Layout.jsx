@@ -11,6 +11,8 @@ const NAV = {
   PATIENT: [
     { to: '/patient', label: 'Appointments', end: true },
     { to: '/patient/records', label: 'Medical records' },
+    { to: '/patient/reports', label: 'Reports' },
+    { to: '/patient/medications', label: 'Medications' },
     { to: '/patient/profile', label: 'Profile' },
   ],
   DOCTOR: [{ to: '/doctor', label: 'Patient queue', end: true }],
@@ -38,7 +40,7 @@ export default function Layout({ title, intro, welcome = false, children }) {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-line bg-white">
+      <header className="glass-bar sticky top-0 z-10 no-print">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-3">
           <div className="flex items-center gap-8">
             <Logo className="text-ink" size={28} />

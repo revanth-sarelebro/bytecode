@@ -22,7 +22,7 @@ export default function PatientRecords() {
       ) : (
         <ul className="space-y-4">
           {records.map((r) => (
-            <li key={r.id} className="rounded border border-line bg-white p-5">
+            <li key={r.id} className="glass p-5">
               <p className="text-sm text-muted">{formatDate(r.createdAt)} · {r.doctorName}</p>
               <p className="mt-2"><span className="font-semibold">Diagnosis: </span>{r.diagnosis}</p>
               {r.prescriptions && <p className="mt-1"><span className="font-semibold">Prescription: </span>{r.prescriptions}</p>}

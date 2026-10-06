@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 import StatusBadge from '../components/StatusBadge'
-import RecordPanel from '../components/RecordPanel'
+import PatientFile from '../components/PatientFile'
 import { appointmentApi, errorMessage } from '../services/api'
 import { notesSchema, validate } from '../lib/schemas'
 import { ACTION_LABEL, NEXT_STATUS, formatDate } from '../lib/status'
@@ -81,7 +81,7 @@ export default function DoctorDashboard() {
       ) : (
         <ul className="space-y-4">
           {appointments.map((a) => (
-            <li key={a.id} className="rounded border border-line bg-white p-5">
+            <li key={a.id} className="glass p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-lg font-semibold">{a.patientName}</p>
@@ -112,9 +112,9 @@ export default function DoctorDashboard() {
                     className="btn-quiet mt-4"
                     aria-expanded={openRecords === a.id}
                   >
-                    {openRecords === a.id ? 'Hide medical records' : 'Medical records'}
+                    {openRecords === a.id ? 'Hide patient file' : 'Patient file'}
                   </button>
-                  {openRecords === a.id && <RecordPanel patientId={a.patientId} />}
+                  {openRecords === a.id && <PatientFile patientId={a.patientId} />}
                 </>
               )}
             </li>

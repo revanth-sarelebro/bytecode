@@ -30,7 +30,7 @@ export default function AdminAudit() {
       ) : shown.length === 0 ? (
         <p className="text-muted">No activity to show.</p>
       ) : (
-        <div className="overflow-x-auto rounded border border-line bg-white">
+        <div className="overflow-x-auto glass">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-line bg-paper">
               <tr>
