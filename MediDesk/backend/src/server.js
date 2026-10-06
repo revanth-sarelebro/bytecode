@@ -11,7 +11,9 @@ const medicalRecordRoutes = require("./routes/medicalRecord.routes");
 const adminRoutes = require("./routes/admin.routes");
 const doctorRoutes = require("./routes/doctor.routes");
 
+
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(helmet());
 const allowedOrigins = [
