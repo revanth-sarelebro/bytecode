@@ -15,22 +15,17 @@ enum Role {
 enum AppointmentStatus {
   PENDING
   CONFIRMED
-  CHECKED_IN
-  IN_PROGRESS
   COMPLETED
   CANCELLED
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   name         String
-  email        String    @unique
+  email        String   @unique
   passwordHash String
-  role         Role      @default(PATIENT)
-  failedLogins Int       @default(0)
-  lockedUntil  DateTime?
-  isDecoy      Boolean   @default(false)
-  createdAt    DateTime  @default(now())
+  role         Role     @default(PATIENT)
+  createdAt    DateTime @default(now())
 
   patientProfile PatientProfile?
   doctorProfile  DoctorProfile?
@@ -62,18 +57,17 @@ model DoctorProfile {
 }
 
 model Appointment {
-  id          Int               @id @default(autoincrement())
-  patientId   Int
-  doctorId    Int
-  dateTime    DateTime
-  status      AppointmentStatus @default(PENDING)
-  reason      String?
-  bookingCode String?           @unique
-  checkedInAt DateTime?
-  createdAt   DateTime          @default(now())
+  id        Int               @id @default(autoincrement())
+  patientId Int
+  doctorId  Int
+  dateTime  DateTime
+  status    AppointmentStatus @default(PENDING)
+  reason    String?
+  createdAt DateTime          @default(now())
 
   patient User @relation("PatientAppointments", fields: [patientId], references: [id], onDelete: Cascade)
-  doctor  User @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  doctor User @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
   @@index([doctorId])
@@ -88,7 +82,8 @@ model MedicalRecord {
   date         DateTime @default(now())
 
   patient User @relation("PatientRecords", fields: [patientId], references: [id], onDelete: Cascade)
-  doctor  User @relation("DoctorRecords", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  doctor User @relation("DoctorRecords", fields: [doctorId], references: [id], onDelete: Cascade)
 
   @@index([patientId])
   @@index([doctorId])
@@ -101,12 +96,9 @@ model AuditLog {
   entity    String
   entityId  Int?
   details   String?
-  ipAddress String?
-  prevHash  String?
-  hash      String?
   createdAt DateTime @default(now())
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([action])
