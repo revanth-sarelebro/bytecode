@@ -112,7 +112,70 @@ const getMyMedicalRecords = async (req, res) => {
         message: "You do not have permission to access medical records",
       });
     }
+const getPatientMedicalRecords = async (req, res) => {
+  try {
+    const patientId = Number(req.params.patientId);
 
+    if (!Number.isInteger(patientId) || patientId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid patient ID",
+      });
+    }
+
+    // Security check:
+    // A doctor may access records only for a patient
+    // with whom they have a confirmed or completed appointment.
+    const doctorPatientAppointment = await prisma.appointment.findFirst({
+      where: {
+        doctorId: req.user.id,
+        patientId,
+        status: {
+          in: ["CONFIRMED", "COMPLETED"],
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!doctorPatientAppointment) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this patient's records",
+      });
+    }
+
+    const medicalRecords = await prisma.medicalRecord.findMany({
+      where: {
+        patientId,
+      },
+      orderBy: {
+        date: "desc",
+      },
+      select: {
+        id: true,
+        patientId: true,
+        doctorId: true,
+        diagnosis: true,
+        prescription: true,
+        date: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      medicalRecords,
+    });
+  } catch (error) {
+    console.error("Get patient medical records error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
     const medicalRecords = await prisma.medicalRecord.findMany({
       where,
       orderBy: {
@@ -142,7 +205,72 @@ const getMyMedicalRecords = async (req, res) => {
   }
 };
 
+const getPatientMedicalRecords = async (req, res) => {
+  try {
+    const patientId = Number(req.params.patientId);
+
+    if (!Number.isInteger(patientId) || patientId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid patient ID",
+      });
+    }
+
+    // A doctor may access records only for a patient
+    // with whom they have a confirmed or completed appointment.
+    const doctorPatientAppointment = await prisma.appointment.findFirst({
+      where: {
+        doctorId: req.user.id,
+        patientId,
+        status: {
+          in: ["CONFIRMED", "COMPLETED"],
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!doctorPatientAppointment) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this patient's records",
+      });
+    }
+
+    const medicalRecords = await prisma.medicalRecord.findMany({
+      where: {
+        patientId,
+      },
+      orderBy: {
+        date: "desc",
+      },
+      select: {
+        id: true,
+        patientId: true,
+        doctorId: true,
+        diagnosis: true,
+        prescription: true,
+        date: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      medicalRecords,
+    });
+  } catch (error) {
+    console.error("Get patient medical records error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 module.exports = {
   createMedicalRecord,
   getMyMedicalRecords,
+  getPatientMedicalRecords,
 };

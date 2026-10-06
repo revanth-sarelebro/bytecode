@@ -85,7 +85,7 @@ export default function DoctorDashboard() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-lg font-semibold">{a.patientName}</p>
-                  <p className="text-sm text-muted">{formatDate(a.date)}</p>
+                  <p className="text-sm text-muted">{formatDate(a.dateTime)}</p>
                   <p className="mt-1">{a.reason}</p>
                 </div>
                 <StatusBadge status={a.status} />
@@ -101,9 +101,10 @@ export default function DoctorDashboard() {
                 </div>
               )}
 
-              {(a.status === 'CONFIRMED' || a.status === 'COMPLETED') && (
-                <NotesEditor appointment={a} onSaved={load} onError={setPageError} />
-              )}
+              {false && (
+  <NotesEditor appointment={a} onSaved={load} onError={setPageError} />
+)}
+              
 
               {(a.status === 'CONFIRMED' || a.status === 'COMPLETED') && (
                 <>

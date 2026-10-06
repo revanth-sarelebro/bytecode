@@ -6,8 +6,6 @@ export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 const TOKEN_KEY = 'medisync_token'
 
-// sessionStorage clears when the tab closes. Safest option is an HttpOnly cookie set by the server
-// (then switch on withCredentials and delete the token code below).
 export const tokenStore = {
   get: () => sessionStorage.getItem(TOKEN_KEY),
   set: (t) => sessionStorage.setItem(TOKEN_KEY, t),
@@ -25,7 +23,6 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// These calls happen before a session exists, so a 401 there is not "session expired".
 const PRE_SESSION = [E.auth.login, E.auth.verifyOtp, E.auth.resendOtp]
 
 api.interceptors.response.use(
@@ -40,7 +37,6 @@ api.interceptors.response.use(
   }
 )
 
-// Turn any failure into one safe, readable sentence. Never show raw server errors.
 export function errorMessage(err) {
   if (!err.response) return 'Cannot reach the server. Check your connection and try again.'
   switch (err.response.status) {
@@ -64,49 +60,58 @@ const data = (p) => p.then((r) => r.data)
 
 const real = {
   authApi: {
-    // Returns { otpRequired: true, challengeId, expiresInSeconds } or { token, user }
     login: (body) => data(api.post(E.auth.login, body)),
     verifyOtp: (body) => data(api.post(E.auth.verifyOtp, body)),
     resendOtp: (body) => data(api.post(E.auth.resendOtp, body)),
     register: (body) => data(api.post(E.auth.register, body)),
     me: () => data(api.get(E.auth.me)),
   },
+
   profileApi: {
     update: (body) => data(api.patch(E.users.updateProfile, body)),
   },
+
   doctorApi: {
-    list: () => data(api.get(E.doctors.list)),
+    list: () => data(api.get(E.doctors.list)).then((r) => r.doctors ?? []),
   },
+
   appointmentApi: {
-    list: () => data(api.get(E.appointments.list)),
+    list: () => data(api.get(E.appointments.list)).then((r) => r.appointments ?? []),
     create: (body) => data(api.post(E.appointments.create, body)),
     setStatus: (id, status) => data(api.patch(E.appointments.status(id), { status })),
     setNotes: (id, notes) => data(api.patch(E.appointments.notes(id), { notes })),
   },
+
   recordApi: {
-    mine: () => data(api.get(E.records.mine)),
-    forPatient: (patientId) => data(api.get(E.records.forPatient(patientId))),
+    mine: () => data(api.get(E.records.mine)).then((r) => r.medicalRecords ?? []),
+    forPatient: (patientId) =>
+      data(api.get(E.records.forPatient(patientId))).then((r) => r.medicalRecords ?? []),
     create: (body) => data(api.post(E.records.create, body)),
   },
+
   reportApi: {
     mine: () => data(api.get(E.reports.mine)),
     forPatient: (patientId) => data(api.get(E.reports.forPatient(patientId))),
     create: (body) => data(api.post(E.reports.create, body)),
   },
+
   medicationApi: {
     mine: () => data(api.get(E.medications.mine)),
     forPatient: (patientId) => data(api.get(E.medications.forPatient(patientId))),
     create: (body) => data(api.post(E.medications.create, body)),
   },
+
   adminApi: {
     users: () => data(api.get(E.admin.users)),
     setActive: (id, active) => data(api.patch(E.admin.setActive(id), { active })),
   },
+
   adminExtraApi: {
     appointments: () => data(api.get(E.admin.appointments)),
     createDoctor: (body) => data(api.post(E.admin.createDoctor, body)),
     audit: (limit = 100) => data(api.get(E.admin.audit, { params: { limit } })),
   },
+
   chatApi: {
     ask: (message) => data(api.post(E.ai.chat, { message })),
   },
