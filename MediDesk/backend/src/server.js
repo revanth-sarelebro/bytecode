@@ -10,6 +10,8 @@ const appointmentRoutes = require("./routes/appointment.routes");
 const medicalRecordRoutes = require("./routes/medicalRecord.routes");
 const adminRoutes = require("./routes/admin.routes");
 const doctorRoutes = require("./routes/doctor.routes");
+const reportRoutes = require("./routes/report.routes");
+const medicationRoutes = require("./routes/medication.routes");
 
 
 const app = express();
@@ -19,6 +21,9 @@ app.use(helmet());
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
+  ...(process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(",").map((s) => s.trim().replace(/\/$/, ""))
+    : []),
 ];
 
 app.use(
@@ -42,6 +47,8 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/medical-records", medicalRecordRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/doctors", doctorRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/medications", medicationRoutes);
 
 // Health check
 app.get("/api/health", async (req, res) => {

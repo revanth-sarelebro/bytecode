@@ -41,6 +41,10 @@ model User {
   patientRecords MedicalRecord[] @relation("PatientRecords")
   doctorRecords  MedicalRecord[] @relation("DoctorRecords")
   auditLogs      AuditLog[]
+  patientReports     Report[]     @relation("PatientReports")
+  doctorReports      Report[]     @relation("DoctorReports")
+  patientMedications Medication[] @relation("PatientMedications")
+  doctorMedications  Medication[] @relation("DoctorMedications")
 }
 
 model PatientProfile {
@@ -111,4 +115,47 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+}
+
+enum ReportType {
+  BLOOD_TEST
+  XRAY
+  SCAN
+  OTHER
+}
+
+model Report {
+  id         Int        @id @default(autoincrement())
+  patientId  Int
+  doctorId   Int
+  type       ReportType
+  title      String
+  results    Json       @default("[]")
+  findings   String?
+  impression String?
+  createdAt  DateTime   @default(now())
+
+  patient User @relation("PatientReports", fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  User @relation("DoctorReports", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([doctorId])
+}
+
+model Medication {
+  id           Int      @id @default(autoincrement())
+  patientId    Int
+  doctorId     Int
+  name         String
+  dosage       String
+  frequency    String
+  durationDays Int
+  startDate    DateTime @default(now())
+  notes        String?
+
+  patient User @relation("PatientMedications", fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  User @relation("DoctorMedications", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([doctorId])
 }
