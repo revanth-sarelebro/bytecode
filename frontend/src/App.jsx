@@ -8,6 +8,7 @@ import PatientProfile from './pages/PatientProfile'
 import PatientRecords from './pages/PatientRecords'
 import DoctorDashboard from './pages/DoctorDashboard'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminAudit from './pages/AdminAudit'
 import { HOME } from './lib/status'
 
 function Landing() {
@@ -33,6 +34,7 @@ export default function App() {
       </Route>
       <Route element={<ProtectedRoute roles={['ADMIN']} />}>
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/audit" element={<AdminAudit />} />
       </Route>
 
       <Route path="*" element={<p className="p-8">Page not found.</p>} />

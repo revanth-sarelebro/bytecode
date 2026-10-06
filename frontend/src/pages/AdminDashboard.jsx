@@ -1,16 +1,33 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import Field from '../components/Field'
 import StatusBadge from '../components/StatusBadge'
 import { adminApi, adminExtraApi, errorMessage } from '../services/api'
 import { doctorSchema, validate } from '../lib/schemas'
 import { formatDate } from '../lib/status'
+import { actionText, isAlert } from '../lib/audit'
 
 const ROLE_TEXT = { PATIENT: 'Patient', DOCTOR: 'Doctor', ADMIN: 'Admin' }
+
+const ACTION_TEXT = {
+  RECORD_VIEWED: 'Viewed medical record',
+  RECORD_CREATED: 'Added medical record',
+  NOTES_UPDATED: 'Updated visit notes',
+  STATUS_CHANGED: 'Changed appointment status',
+  ACCOUNT_DISABLED: 'Disabled account',
+  ACCOUNT_ENABLED: 'Enabled account',
+  LOGIN_FAILED: 'Failed sign in',
+  ACCESS_DENIED: 'Blocked from restricted page',
+}
+const when = (iso) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([])
   const [appointments, setAppointments] = useState([])
+  const [activity, setActivity] = useState([])
+  const [audit, setAudit] = useState([])
+  const [showAllAudit, setShowAllAudit] = useState(false)
   const [loading, setLoading] = useState(true)
   const [pageError, setPageError] = useState('')
   const [values, setValues] = useState({ name: '', email: '', speciality: '', password: '' })
@@ -19,9 +36,14 @@ export default function AdminDashboard() {
 
   const load = useCallback(async () => {
     try {
-      const [u, a] = await Promise.all([adminApi.users(), adminExtraApi.appointments()])
+      const [u, a, log] = await Promise.all([
+        adminApi.users(),
+        adminExtraApi.appointments(),
+        adminExtraApi.auditLog().catch(() => []),
+      ])
       setUsers(u)
       setAppointments(a)
+      setAudit(log)
     } catch (err) {
       setPageError(errorMessage(err))
     } finally {
@@ -66,6 +88,7 @@ export default function AdminDashboard() {
 
   return (
     <Layout
+      welcome
       title="Clinic overview"
       intro={loading ? '' : `${count('PATIENT')} patients, ${count('DOCTOR')} doctors, ${waiting} appointments waiting for confirmation.`}
     >
@@ -75,6 +98,29 @@ export default function AdminDashboard() {
         <p className="text-muted">Loading…</p>
       ) : (
         <div className="space-y-12">
+          <section>
+            <div className="mb-3 flex items-baseline justify-between">
+              <h2 className="text-xl font-bold">Recent activity</h2>
+              <Link to="/admin/audit" className="text-sm font-semibold text-clinic underline">View full audit log</Link>
+            </div>
+            {activity.length === 0 ? (
+              <p className="text-muted">No activity recorded yet.</p>
+            ) : (
+              <ul className="divide-y divide-line rounded border border-line bg-white text-sm">
+                {activity.map((e) => (
+                  <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+                    <span>
+                      <span className="font-semibold">{e.actorName}</span>{' '}
+                      <span className={isAlert(e.action) ? 'font-semibold text-rose' : ''}>{actionText(e.action).toLowerCase()}</span>
+                      {e.target && <span className="text-muted"> · {e.target}</span>}
+                    </span>
+                    <span className="text-muted">{formatDate(e.createdAt)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
           <section>
             <h2 className="mb-3 text-xl font-bold">People</h2>
             <div className="overflow-x-auto rounded border border-line bg-white">
@@ -137,6 +183,46 @@ export default function AdminDashboard() {
                 </ul>
               )}
             </div>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold">Audit log</h2>
+            <p className="mb-3 text-muted">Who looked at or changed patient data, and when.</p>
+            {audit.length === 0 ? (
+              <p className="text-muted">No activity recorded yet.</p>
+            ) : (
+              <>
+                <div className="overflow-x-auto rounded border border-line bg-white">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-line bg-paper">
+                      <tr>
+                        <th className="px-4 py-2 font-semibold">When</th>
+                        <th className="px-4 py-2 font-semibold">Who</th>
+                        <th className="px-4 py-2 font-semibold">What they did</th>
+                        <th className="px-4 py-2 font-semibold">Record</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-line">
+                      {(showAllAudit ? audit : audit.slice(0, 8)).map((e) => (
+                        <tr key={e.id}>
+                          <td className="whitespace-nowrap px-4 py-2 text-muted">{when(e.createdAt)}</td>
+                          <td className="px-4 py-2">{e.actorName} <span className="text-muted">({ROLE_TEXT[e.actorRole] ?? e.actorRole})</span></td>
+                          <td className={`px-4 py-2 ${e.action === 'LOGIN_FAILED' || e.action === 'ACCESS_DENIED' ? 'font-semibold text-rose' : ''}`}>
+                            {ACTION_TEXT[e.action] ?? e.action}
+                          </td>
+                          <td className="px-4 py-2 text-muted">{e.target}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {audit.length > 8 && (
+                  <button onClick={() => setShowAllAudit((v) => !v)} className="btn-quiet mt-3">
+                    {showAllAudit ? 'Show fewer' : `Show all ${audit.length} entries`}
+                  </button>
+                )}
+              </>
+            )}
           </section>
         </div>
       )}

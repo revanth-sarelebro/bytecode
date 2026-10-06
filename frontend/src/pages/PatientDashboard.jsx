@@ -60,7 +60,7 @@ export default function PatientDashboard() {
   }
 
   return (
-    <Layout title="Your appointments" intro="Request a time with a doctor. You will see it here once they confirm.">
+    <Layout welcome title="Your appointments" intro="Request a time with a doctor. You will see it here once they confirm.">
       {pageError && <p role="alert" className="mb-6 rounded bg-rose-soft px-3 py-2 text-rose">{pageError}</p>}
 
       <div className="grid gap-10 md:grid-cols-[2fr_3fr]">
